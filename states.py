@@ -3,7 +3,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 class SurveyTypeForm(StatesGroup):
 	language = State()
-	institution_type = State()  # New state for Bog‘cha/Maktab or Markaz
+	institution_type = State()
 	user_phone = State()
 	survey_type = State()
 
