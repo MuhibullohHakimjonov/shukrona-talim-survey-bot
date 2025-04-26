@@ -35,6 +35,7 @@ class Employee(Base):
 	language = Column(Enum(Language), nullable=False)
 	user_phone = Column(String, nullable=False)
 	institution_type = Column(Enum(InstitutionType), nullable=False)
+	selfie_url = Column(String, nullable=True)
 
 
 class Student(Base):
@@ -52,6 +53,7 @@ class Student(Base):
 	language = Column(Enum(Language), nullable=False)
 	user_phone = Column(String, nullable=False)
 	institution_type = Column(Enum(InstitutionType), nullable=False)
+	selfie_url = Column(String, nullable=True)
 
 
 Base.metadata.create_all(engine)

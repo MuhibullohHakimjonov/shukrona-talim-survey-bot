@@ -4,6 +4,7 @@ from aiogram.fsm.state import StatesGroup, State
 class SurveyTypeForm(StatesGroup):
 	language = State()
 	institution_type = State()
+	selfie = State()
 	user_phone = State()
 	survey_type = State()
 
