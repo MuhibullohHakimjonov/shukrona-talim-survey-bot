@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, KeyboardButton, \
-	ReplyKeyboardMarkup
+	ReplyKeyboardMarkup, ContentType
 from dotenv import load_dotenv
 import os
 from database import SessionLocal, Employee, Student, Language, InstitutionType
@@ -133,8 +133,15 @@ async def handle_callback_query(callback: CallbackQuery):
 					f"  Manzil: {emp.address}\n"
 					f"  Email: {emp.email}\n"
 					f"  Lavozim va fan: {emp.position}\n"
-					f"  Ish boshlagan sana: {emp.start_date}\n\n"
+					f"  Ish boshlagan sana: {emp.start_date}\n"
+					f"  Selfi: {emp.selfie_url or 'Yo‘q'}\n\n"
 				)
+				if emp.selfie_url:
+					await bot.send_photo(
+						chat_id=callback.from_user.id,
+						photo=emp.selfie_url.split('/')[-1],  # Extract file_id
+						caption=f"Selfi: {emp.full_name}"
+					)
 
 		if students:
 			response_text += "Tarbiyalanuvchilar / Воспитанники:\n"
@@ -149,8 +156,15 @@ async def handle_callback_query(callback: CallbackQuery):
 					f"  Qatnashish kunlari: {stu.attendance_days}\n"
 					f"  Ota-ona/vasiy: {stu.parent_name}\n"
 					f"  Ota-ona email: {stu.parent_email}\n"
-					f"  Ota-ona telefoni: {stu.parent_phone}\n\n"
+					f"  Ota-ona telefoni: {stu.parent_phone}\n"
+					f"  Selfi: {stu.selfie_url or 'Yo‘q'}\n\n"
 				)
+				if stu.selfie_url:
+					await bot.send_photo(
+						chat_id=callback.from_user.id,
+						photo=stu.selfie_url.split('/')[-1], 
+						caption=f"Selfi: {stu.full_name}"
+					)
 
 		keyboard = InlineKeyboardMarkup(inline_keyboard=[
 			[InlineKeyboardButton(text="Orqaga / Назад", callback_data="show_responses")]
@@ -219,11 +233,51 @@ async def process_user_phone(message: Message, state: FSMContext):
 	data = await state.get_data()
 	lang = data.get("lang_text", "uz")
 	await message.answer(
+		"Iltimos, selfi rasmingizni yuboring / Пожалуйста, отправьте ваше селфи." if lang == "uz" else
+		"Пожалуйста, отправьте ваше селфи."
+	)
+	await state.set_state(SurveyTypeForm.selfie)
+
+
+@dp.message(SurveyTypeForm.selfie, F.content_type == ContentType.PHOTO)
+async def process_selfie(message: Message, state: FSMContext):
+	if message.from_user.id == ADMIN_ID:
+		logger.warning(f"Admin {message.from_user.id} attempted to submit selfie")
+		await message.answer(
+			"Siz admin sifatida faqat javoblarni ko‘rishingiz mumkin / Вы, как администратор, можете только просматривать ответы."
+		)
+		return
+
+	data = await state.get_data()
+	lang = data.get("lang_text", "uz")
+	photo = message.photo[-1]  # Get highest resolution photo
+	file_id = photo.file_id
+	selfie_url = f"https://api.telegram.org/file/bot{os.getenv('BOT_TOKEN')}/{file_id}"
+	await state.update_data(selfie_url=selfie_url)
+
+	await message.answer(
 		"Siz qaysi muassasadan kelyapsiz? / Из какого учреждения вы?:" if lang == "uz" else
 		"Из какого учреждения вы? / Siz qaysi muassasadan kelyapsiz?:",
 		reply_markup=get_institution_type_keyboard()
 	)
 	await state.set_state(SurveyTypeForm.institution_type)
+
+
+@dp.message(SurveyTypeForm.selfie)
+async def process_invalid_selfie(message: Message, state: FSMContext):
+	if message.from_user.id == ADMIN_ID:
+		logger.warning(f"Admin {message.from_user.id} attempted to submit selfie")
+		await message.answer(
+			"Siz admin sifatida faqat javoblarni ko‘rishingiz mumkin / Вы, как администратор, можете только просматривать ответы."
+		)
+		return
+
+	data = await state.get_data()
+	lang = data.get("lang_text", "uz")
+	await message.answer(
+		"Iltimos, faqat rasm yuboring / Пожалуйста, отправьте только фото." if lang == "uz" else
+		"Пожалуйста, отправьте только фото."
+	)
 
 
 @dp.message(SurveyTypeForm.institution_type)
@@ -295,11 +349,13 @@ async def process_survey_type(message: Message, state: FSMContext):
 	lang = data.get("lang_text", "uz")
 	logger.info(f"User {message.from_user.id} selected survey type: {survey_type}")
 	if survey_type == "Xodim (O‘qituvchi) / Сотрудник (Преподаватель)":
+		await state.update_data(survey_type=survey_type)
 		await message.answer(
 			"To‘liq ism, familiyangiz?:" if lang == "uz" else "Введите ваше полное имя:"
 		)
 		await state.set_state(EmployeeForm.full_name)
 	elif survey_type == "Tarbiyalanuvchi / Воспитанник":
+		await state.update_data(survey_type=survey_type)
 		await message.answer(
 			"Bola ismi va familiyasi?:" if lang == "uz" else "Имя и фамилия ребёнка?:"
 		)
@@ -491,9 +547,9 @@ async def process_employee_start_date(message: Message, state: FSMContext):
 				start_date=datetime.strptime(message.text, "%Y-%m-%d").date(),
 				language=data["language"],
 				user_phone=data["user_phone"],
-				institution_type=InstitutionType(data["institution_type"])
+				institution_type=InstitutionType(data["institution_type"]),
+				selfie_url=data.get("selfie_url")
 			)
-			print(employee)
 			session.add(employee)
 			session.commit()
 		logger.info(
@@ -778,8 +834,8 @@ async def process_student_parent_phone(message: Message, state: FSMContext):
 				parent_phone=message.text,
 				language=data["language"],
 				user_phone=data["user_phone"],
-				institution_type=InstitutionType(data["institution_type"])
-
+				institution_type=InstitutionType(data["institution_type"]),
+				selfie_url=data.get("selfie_url")
 			)
 			session.add(student)
 			session.commit()
