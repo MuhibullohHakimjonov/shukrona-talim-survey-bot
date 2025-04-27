@@ -134,7 +134,7 @@ async def handle_callback_query(callback: CallbackQuery):
 					f"  Email: {emp.email}\n"
 					f"  Lavozim va fan: {emp.position}\n"
 					f"  Ish boshlagan sana: {emp.start_date}\n"
-					f"  Selfi: {emp.selfie_url or 'Yo‘q'}\n\n"
+					f"  Selfi: {'👇' or 'Yo‘q'}\n\n"
 				)
 				if emp.selfie_url:
 					await bot.send_photo(
@@ -157,7 +157,7 @@ async def handle_callback_query(callback: CallbackQuery):
 					f"  Ota-ona/vasiy: {stu.parent_name}\n"
 					f"  Ota-ona email: {stu.parent_email}\n"
 					f"  Ota-ona telefoni: {stu.parent_phone}\n"
-					f"  Selfi: {stu.selfie_url or 'Yo‘q'}\n\n"
+					f"  Selfi: {'👇' or 'Yo‘q'}\n\n"
 				)
 				if stu.selfie_url:
 					await bot.send_photo(
