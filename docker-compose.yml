@@ -17,6 +17,7 @@ services:
       - .:/app
     depends_on:
       - db
+    command: ["./entrypoint.sh"]
     restart: unless-stopped
 
   db:
