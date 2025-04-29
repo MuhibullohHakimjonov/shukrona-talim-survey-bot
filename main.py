@@ -414,8 +414,8 @@ async def process_employee_date_of_birth(message: Message, state: FSMContext):
 		lang = data.get("lang_text", "uz")
 		logger.warning(f"User {message.from_user.id} sent invalid date_of_birth: {message.text}")
 		await message.answer(
-			"Iltimos, sanani to‘g‘ri formatda kiriting (YYYY-MM-DD)." if lang == "uz" else
-			"Пожалуйста, введите дату в правильном формате (ГГГГ-ММ-ДД)."
+			"Iltimos, sanani to‘g‘ri formatda kiriting (yil-oy-kun)." if lang == "uz" else
+			"Пожалуйста, введите дату в правильном формате (год-месяц-день)."
 		)
 		return
 	data = await state.get_data()
@@ -526,8 +526,8 @@ async def process_employee_start_date(message: Message, state: FSMContext):
 		lang = data.get("lang_text", "uz")
 		logger.warning(f"User {message.from_user.id} sent invalid start_date: {message.text}")
 		await message.answer(
-			"Iltimos, sanani to‘g‘ri formatda kiriting (YYYY-MM-DD)." if lang == "uz" else
-			"Пожалуйста, введите дату в правильном формате (ГГГГ-ММ-ДД)."
+			"Iltimos, sanani to‘g‘ri formatda kiriting (yil-oy-kun)." if lang == "uz" else
+			"Пожалуйста, введите дату в правильном формате (год-месяц-день)."
 		)
 		return
 
@@ -592,7 +592,7 @@ async def process_student_full_name(message: Message, state: FSMContext):
 	data = await state.get_data()
 	lang = data.get("lang_text", "uz")
 	await message.answer(
-		"Tug‘ilgan sanasi? (YYYY-MM-DD):" if lang == "uz" else "Дата рождения? (ГГГГ-ММ-ДД):"
+		"Tug‘ilgan sanasi? (yil-oy-kun):" if lang == "uz" else "Дата рождения? (год-месяц-день):"
 	)
 	await state.set_state(StudentForm.date_of_birth)
 
@@ -615,8 +615,8 @@ async def process_student_date_of_birth(message: Message, state: FSMContext):
 		lang = data.get("lang_text", "uz")
 		logger.warning(f"User {message.from_user.id} sent invalid student date_of_birth: {message.text}")
 		await message.answer(
-			"Iltimos, sanani to‘g‘ri formatda kiriting (YYYY-MM-DD)." if lang == "uz" else
-			"Пожалуйста, введите дату в правильном формате (ГГГГ-ММ-ДД)."
+			"Iltimos, sanani to‘g‘ri formatda kiriting (yil-oy-kun)." if lang == "uz" else
+			"Пожалуйста, введите дату в правильном формате (год-месяц-день)."
 		)
 		return
 	data = await state.get_data()
