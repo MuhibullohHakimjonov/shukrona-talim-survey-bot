@@ -391,7 +391,7 @@ async def process_employee_full_name(message: Message, state: FSMContext):
 	data = await state.get_data()
 	lang = data.get("lang_text", "uz")
 	await message.answer(
-		"Tug‘ilgan sanangiz? (YYYY-MM-DD):" if lang == "uz" else "Дата рождения? (ГГГГ-ММ-ДД):"
+		"Tug‘ilgan sanangiz? (yil-oy-kun):" if lang == "uz" else "Дата рождения? (год-месяц-день):"
 	)
 	await state.set_state(EmployeeForm.date_of_birth)
 
