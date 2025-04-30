@@ -165,10 +165,6 @@ async def handle_callback_query(callback: CallbackQuery):
 						photo=stu.selfie_url.split('/')[-1], 
 						caption=f"Selfi: {stu.full_name}"
 					)
-
-		keyboard = InlineKeyboardMarkup(inline_keyboard=[
-			[InlineKeyboardButton(text="Orqaga / Назад", callback_data="show_responses")]
-		])
 		await callback.message.edit_text(response_text, reply_markup=keyboard)
 		await callback.answer()
 
@@ -504,7 +500,7 @@ async def process_employee_position(message: Message, state: FSMContext):
 	data = await state.get_data()
 	lang = data.get("lang_text", "uz")
 	await message.answer(
-		"Ish boshlagan sanangiz? (YYYY-MM-DD):" if lang == "uz" else "Дата начала работы? (ГГГГ-ММ-ДД):"
+		"Ish boshlagan sanangiz? (yil-oy-kun):" if lang == "uz" else "Дата начала работы? (год-месяц-день):"
 	)
 	await state.set_state(EmployeeForm.start_date)
 
